@@ -1,35 +1,40 @@
-// src/components/AddToCartButton.tsx
 "use client";
 
 import { useCartStore } from "@/store/useCartStore";
-import { ShoppingCart } from "lucide-react";
-import { useState } from "react";
 
-export default function AddToCartButton({ product }: { product: any }) {
-  const addItem = useCartStore((state) => state.addItem);
-  const [isAdded, setIsAdded] = useState(false);
+// Defines the shape of the product data you pass into the button
+interface AddToCartButtonProps {
+  product: {
+    id: string;
+    name: string;
+    price: number;
+    image?: string;
+  };
+}
 
-  const handleAdd = () => {
+export default function AddToCartButton({ product }: AddToCartButtonProps) {
+  const { addItem, openCart } = useCartStore();
+
+  const handleAddToCart = () => {
+    // 1. Add the item to the global store with a default quantity of 1
     addItem({
       id: product.id,
       name: product.name,
       price: product.price,
-      image: product.image_urls[0],
-      quantity: 1,
+      image: product.image,
+      quantity: 1, 
     });
     
-    // Show brief success feedback
-    setIsAdded(true);
-    setTimeout(() => setIsAdded(false), 1500);
+    // 2. Immediately slide the cart sidebar open
+    openCart();
   };
 
   return (
     <button
-      onClick={handleAdd}
-      className="bg-gradient-to-r from-amber-600 to-amber-500 text-black px-6 py-2 rounded-lg font-semibold hover:from-amber-500 hover:to-amber-400 transition-all flex items-center gap-2"
+      onClick={handleAddToCart}
+      className="w-full bg-zinc-900 text-white py-4 text-sm tracking-widest uppercase font-medium hover:bg-zinc-800 transition-colors active:scale-[0.99]"
     >
-      <ShoppingCart size={20} />
-      {isAdded ? "Added to Cart!" : "Add to Cart"}
+      Add to Cart
     </button>
   );
 }
