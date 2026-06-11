@@ -1,51 +1,46 @@
-// src/store/useCartStore.ts
 import { create } from 'zustand';
 
-export type CartItem = {
+export interface CartItem {
   id: string;
   name: string;
   price: number;
-  image: string;
   quantity: number;
-};
+  image?: string;
+}
 
 interface CartState {
+  isOpen: boolean;
   items: CartItem[];
-  isOpen: boolean; // Tracks if sidebar is open
-  addItem: (item: CartItem) => void;
-  removeItem: (id: string) => void;
-  clearCart: () => void;
-  cartTotal: () => number;
-  cartCount: () => number;
   openCart: () => void;
   closeCart: () => void;
+  addItem: (item: CartItem) => void;
+  removeItem: (id: string) => void;
+  updateQuantity: (id: string, quantity: number) => void;
+  clearCart: () => void;
+  cartTotal: () => number;
 }
 
 export const useCartStore = create<CartState>((set, get) => ({
-  items: [],
   isOpen: false,
-  
-  addItem: (newItem: CartItem) => set((state: CartState) => {
-    const existingItem = state.items.find((item: CartItem) => item.id === newItem.id);
-    if (existingItem) {
-      return {
-        items: state.items.map((item: CartItem) =>
-          item.id === newItem.id ? { ...item, quantity: item.quantity + 1 } : item
-        ),
-        isOpen: true,
-      };
-    }
-    return { items: [...state.items, { ...newItem, quantity: 1 }], isOpen: true };
-  }),
-
-  removeItem: (id: string) => set((state: CartState) => ({
-    items: state.items.filter((item: CartItem) => item.id !== id)
-  })),
-
-  clearCart: () => set({ items: [] }),
-  cartTotal: () => (get() as CartState).items.reduce((total: number, item: CartItem) => total + (item.price * item.quantity), 0),
-  cartCount: () => (get() as CartState).items.reduce((count: number, item: CartItem) => count + item.quantity, 0),
-  
+  items: [
+    // Pre-loaded for testing the checkout UI. Remove this default item later!
+    { id: "1", name: "The Minimalist Lounge", price: 12500, quantity: 1 }
+  ],
   openCart: () => set({ isOpen: true }),
   closeCart: () => set({ isOpen: false }),
+  addItem: (item) => set((state) => {
+    const existing = state.items.find(i => i.id === item.id);
+    if (existing) {
+      return { items: state.items.map(i => i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i) };
+    }
+    return { items: [...state.items, { ...item, quantity: 1 }] };
+  }),
+  removeItem: (id) => set((state) => ({ items: state.items.filter(i => i.id !== id) })),
+  updateQuantity: (id, quantity) => set((state) => ({
+    items: quantity === 0 
+      ? state.items.filter(i => i.id !== id) 
+      : state.items.map(i => i.id === id ? { ...i, quantity } : i)
+  })),
+  clearCart: () => set({ items: [] }),
+  cartTotal: () => get().items.reduce((total, item) => total + (item.price * item.quantity), 0),
 }));
