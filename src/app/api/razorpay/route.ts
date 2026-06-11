@@ -1,25 +1,42 @@
 import { NextResponse } from "next/server";
 import Razorpay from "razorpay";
 
-// 1. Hardcode your actual keys here to bypass the .env block
 const razorpay = new Razorpay({
-  key_id: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID!,       // <-- Paste your Key ID here
-  key_secret: process.env.RAZORPAY_KEY_SECRET!,        // <-- Paste your Key Secret here
+  key_id: "rzp_test_T0HTggTI47vAg6",       // <-- Hardcode your NEW Key ID
+  key_secret: "l85QLhT7gxzCSef1HewueCpY",        // <-- Hardcode your NEW Secret
 });
 
 export async function POST(request: Request) {
   try {
-    const { amount } = await request.json();
+    const body = await request.json();
+    console.log("1. Received Body from Cart:", body);
 
+    if (!body.amount) {
+      console.error("Error: Amount is missing or zero");
+      return NextResponse.json({ error: "Invalid amount" }, { status: 400 });
+    }
+
+    console.log("2. Attempting Razorpay Order Creation for amount:", body.amount);
+    
     const order = await razorpay.orders.create({
-      amount: Math.round(amount * 100), // Forces a clean integer
+      amount: Math.round(body.amount * 100), 
       currency: "INR",
       receipt: "rcpt_" + Math.random().toString(36).substring(7),
     });
 
+    console.log("3. Order Created Successfully:", order.id);
     return NextResponse.json({ orderId: order.id }, { status: 200 });
-  } catch (error) {
-    console.error("Razorpay Error:", error);
-    return NextResponse.json({ error: "Failed to create order" }, { status: 500 });
+
+  } catch (error: any) {
+    // THIS IS THE SMOKING GUN
+    console.error("RAZORPAY FATAL ERROR:", error);
+    
+    return NextResponse.json(
+      { 
+        error: "Failed to create order", 
+        details: error?.description || error?.message || JSON.stringify(error) 
+      }, 
+      { status: 500 }
+    );
   }
 }
