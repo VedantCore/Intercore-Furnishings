@@ -43,15 +43,16 @@ export default function CartSidebar() {
       });
       
       // If the backend crashed, stop here and alert the user
+const orderData = await orderResponse.json();
+      
       if (!orderResponse.ok) {
-        throw new Error("Server failed to create order.");
+        console.error("Detailed Server Error:", orderData);
+        throw new Error(`Server failed: ${orderData.details || orderData.error}`);
       }
-
-      const orderData = await orderResponse.json();
 
       // 3. Open Razorpay Modal
       const options = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID, // <-- Paste your Key ID here
+        key: "rzp_test_T0HTggTI47vAg6", // <-- Paste your Key ID here
         amount: total * 100,
         currency: "INR",
         name: "Intercore Furnishings",
