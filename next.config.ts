@@ -1,12 +1,12 @@
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   images: {
     remotePatterns: [
       {
-        protocol: "https",
-        hostname: "**.supabase.co", // Secures and allows your Supabase storage URLs
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
       },
+      // Keep your supabase storage domain here if you added it earlier!
     ],
   },
 };
