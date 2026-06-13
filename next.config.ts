@@ -4,11 +4,12 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'images.unsplash.com',
+        hostname: 'mamnzhmusnsbeuelpgnz.supabase.co',
+        port: '',
+        pathname: '/storage/v1/object/public/**', // This restricts it specifically to your public storage
       },
-      // Keep your supabase storage domain here if you added it earlier!
     ],
   },
 };
 
-export default nextConfig;
+module.exports = nextConfig;
