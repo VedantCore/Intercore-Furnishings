@@ -16,6 +16,7 @@ interface Product {
   created_at: string;
 }
 
+const SERIF = "'Playfair Display', Georgia, 'Times New Roman', serif";
 const CATEGORIES = ["All", "Seating", "Tables", "Storage", "Lighting", "Decor"];
 type SortOption = "newest" | "price-asc" | "price-desc";
 
@@ -202,7 +203,9 @@ export default function CatalogPage() {
   return (
     <div className="min-h-screen bg-white pt-32 pb-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
       <div className="mb-16">
-        <h1 className="text-3xl font-medium tracking-tight text-zinc-900 mb-4">The Collection</h1>
+        <h1 className="text-4xl md:text-[3.25rem] font-bold italic leading-[1.08] tracking-tight mb-7" style={{ fontFamily: SERIF, color: "#1A1A18" }}>
+          The Collection
+        </h1>
         <p className="text-sm font-light text-zinc-500 max-w-xl leading-relaxed">
           Explore our complete range of architectural furniture. Filter by category to find pieces designed specifically for your environment.
         </p>
