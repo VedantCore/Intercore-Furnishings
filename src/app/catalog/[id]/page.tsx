@@ -1,15 +1,19 @@
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowLeft, Check } from "lucide-react";
 import AddToCartButton from "@/components/AddToCartButton";
 import ProductReviews from "@/components/ProductReviews";
 import { supabase } from "@/lib/supabase"; 
 
-export default async function ProductPage({ params }: { params: { id: string } }) {
-  // --- REAL DATABASE FETCH ---
+export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
+  // 1. Unwrap the params safely for modern Next.js
+  const resolvedParams = await params;
+  
+  // 2. Fetch from Supabase using the resolved ID
   const { data: product, error } = await supabase
     .from('products')
     .select('*')
-    .eq('id', params.id)
+    .eq('id', resolvedParams.id)
     .single();
 
   if (!product || error) return <div className="min-h-screen flex items-center justify-center text-zinc-500">Product not found</div>;
@@ -23,9 +27,22 @@ export default async function ProductPage({ params }: { params: { id: string } }
 
       <div className="lg:grid lg:grid-cols-2 lg:gap-x-16 lg:items-start">
         
-        {/* Left Column: Image */}
-        <div className="w-full aspect-square bg-zinc-100 rounded-sm flex items-center justify-center mb-10 lg:mb-0">
-          <span className="text-zinc-400 text-sm tracking-widest uppercase font-light">Image Placeholder</span>
+        {/* Left Column: Image Gallery */}
+        <div className="w-full aspect-square relative bg-zinc-50 rounded-sm overflow-hidden mb-10 lg:mb-0">
+          {product.image_url ? (
+            <Image
+              src={product.image_url}
+              alt={product.name}
+              fill
+              className="object-cover object-center"
+              priority // Loads the main product image instantly
+              sizes="(max-width: 1024px) 100vw, 50vw"
+            />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center bg-zinc-100">
+              <span className="text-zinc-400 text-sm tracking-widest uppercase font-light">Image Pending</span>
+            </div>
+          )}
         </div>
 
         {/* Right Column: Product Details */}
@@ -46,7 +63,14 @@ export default async function ProductPage({ params }: { params: { id: string } }
           </div>
 
           {/* The Add to Cart Button hooked to Zustand */}
-          <AddToCartButton product={{ id: product.id, name: product.name, price: product.price }} />
+          <AddToCartButton 
+            product={{ 
+              id: product.id, 
+              name: product.name, 
+              price: product.price,
+              image: product.image_url 
+            }} 
+          />
 
           {/* THE NEW REVIEWS SECTION */}
           <ProductReviews productId={product.id} />

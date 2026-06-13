@@ -1,5 +1,7 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
+// 1. Interface
 export interface CartItem {
   id: string;
   name: string;
@@ -8,39 +10,67 @@ export interface CartItem {
   image?: string;
 }
 
-interface CartState {
-  isOpen: boolean;
+interface CartStore {
   items: CartItem[];
-  openCart: () => void;
-  closeCart: () => void;
-  addItem: (item: CartItem) => void;
+  isOpen: boolean;     // Fixed: Renamed from isCartOpen
+  cartTotal: number;   // Fixed: Added to satisfy your checkout and sidebar
+  addItem: (item: Omit<CartItem, 'quantity'>) => void;
   removeItem: (id: string) => void;
   updateQuantity: (id: string, quantity: number) => void;
   clearCart: () => void;
-  cartTotal: () => number;
+  openCart: () => void;
+  closeCart: () => void;
 }
 
-export const useCartStore = create<CartState>((set, get) => ({
-  isOpen: false,
-  items: [
-    // Pre-loaded for testing the checkout UI. Remove this default item later!
-    { id: "1", name: "The Minimalist Lounge", price: 12500, quantity: 1 }
-  ],
-  openCart: () => set({ isOpen: true }),
-  closeCart: () => set({ isOpen: false }),
-  addItem: (item) => set((state) => {
-    const existing = state.items.find(i => i.id === item.id);
-    if (existing) {
-      return { items: state.items.map(i => i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i) };
-    }
-    return { items: [...state.items, { ...item, quantity: 1 }] };
-  }),
-  removeItem: (id) => set((state) => ({ items: state.items.filter(i => i.id !== id) })),
-  updateQuantity: (id, quantity) => set((state) => ({
-    items: quantity === 0 
-      ? state.items.filter(i => i.id !== id) 
-      : state.items.map(i => i.id === id ? { ...i, quantity } : i)
-  })),
-  clearCart: () => set({ items: [] }),
-  cartTotal: () => get().items.reduce((total, item) => total + (item.price * item.quantity), 0),
-}));
+// Helper function to keep the total perfectly accurate on every action
+const calculateTotal = (items: CartItem[]) => {
+  return items.reduce((total, item) => total + (item.price * item.quantity), 0);
+};
+
+// 2. Store Implementation
+export const useCartStore = create<CartStore>()(
+  persist(
+    (set, get) => ({
+      items: [],
+      isOpen: false,
+      cartTotal: 0, 
+      
+      openCart: () => set({ isOpen: true }),
+      closeCart: () => set({ isOpen: false }),
+      
+      addItem: (item) => {
+        const currentItems = get().items;
+        const existingItem = currentItems.find((i) => i.id === item.id);
+        let newItems;
+        
+        if (existingItem) {
+          newItems = currentItems.map((i) =>
+            i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i
+          );
+        } else {
+          newItems = [...currentItems, { ...item, quantity: 1 }];
+        }
+        
+        // Save items, auto-open the sidebar, and update the total!
+        set({ 
+          items: newItems, 
+          isOpen: true, 
+          cartTotal: calculateTotal(newItems) 
+        });
+      },
+      
+      removeItem: (id) => {
+        const newItems = get().items.filter((i) => i.id !== id);
+        set({ items: newItems, cartTotal: calculateTotal(newItems) });
+      },
+      
+      updateQuantity: (id, quantity) => {
+        const newItems = get().items.map((i) => (i.id === id ? { ...i, quantity } : i));
+        set({ items: newItems, cartTotal: calculateTotal(newItems) });
+      },
+      
+      clearCart: () => set({ items: [], cartTotal: 0 }),
+    }),
+    { name: 'cart-storage' }
+  )
+);
