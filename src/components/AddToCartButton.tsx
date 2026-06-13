@@ -22,7 +22,6 @@ export default function AddToCartButton({ product }: AddToCartButtonProps) {
       name: product.name,
       price: product.price,
       image: product.image,
-      quantity: 1, 
     });
     
     // 2. Immediately slide the cart sidebar open
