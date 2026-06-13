@@ -3,9 +3,12 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
-import { Package, LogOut, Loader2, Calendar, Edit2, X, Check } from "lucide-react";
+import { Package, LogOut, Loader2, Calendar, Edit2, X, Check, Shield } from "lucide-react";
 import Link from "next/link";
 import { useCartStore } from "@/store/useCartStore";
+
+// Add your secure admin email(s) here
+const ADMIN_EMAILS = ["vserva2006@gmail.com"];
 
 interface Order {
   id: string;
@@ -20,7 +23,7 @@ export default function ProfilePage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   
-  // New Profile Edit States
+  // Profile Edit States
   const [userName, setUserName] = useState<string>("Valued Client");
   const [isEditing, setIsEditing] = useState(false);
   const [editNameInput, setEditNameInput] = useState("");
@@ -144,13 +147,26 @@ export default function ProfilePage() {
           <p className="text-sm font-light text-zinc-500 mt-2">{userEmail}</p>
         </div>
 
-        {/* Right Side: Sign Out */}
-        <button
-          onClick={handleSignOut}
-          className="inline-flex items-center text-xs uppercase tracking-widest text-zinc-500 hover:text-black transition-colors pt-2"
-        >
-          <LogOut className="w-4 h-4 mr-2" /> Sign Out
-        </button>
+        {/* Right Side: Actions */}
+        <div className="flex items-center gap-6 mt-4 sm:mt-0">
+          
+          {/* THE BOUNCER: Admin Dashboard Link - Case-insensitive check */}
+          {userEmail && ADMIN_EMAILS.some(email => email.toLowerCase().trim() === userEmail.toLowerCase().trim()) && (
+            <Link
+              href="/admin"
+              className="inline-flex items-center text-xs uppercase tracking-widest text-zinc-500 hover:text-black transition-colors pt-2"
+            >
+              <Shield className="w-4 h-4 mr-2" /> Admin Panel
+            </Link>
+          )}
+
+          <button
+            onClick={handleSignOut}
+            className="inline-flex items-center text-xs uppercase tracking-widest text-zinc-500 hover:text-black transition-colors pt-2"
+          >
+            <LogOut className="w-4 h-4 mr-2" /> Sign Out
+          </button>
+        </div>
       </div>
 
       {/* Order History Section */}
@@ -173,7 +189,7 @@ export default function ProfilePage() {
                 
                 <div className="space-y-2">
                   <div className="flex items-center gap-3">
-                    <span className="text-sm font-medium text-zinc-900">Order #{order.razorpay_payment_id.replace('pay_', '')}</span>
+                    <span className="text-sm font-medium text-zinc-900">Order #{order.razorpay_payment_id ? order.razorpay_payment_id.replace('pay_', '') : order.id.slice(0,8)}</span>
                     <span className="px-2 py-1 bg-green-50 text-green-700 text-[10px] uppercase tracking-widest font-medium rounded-sm">
                       {order.status}
                     </span>
