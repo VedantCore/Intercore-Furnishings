@@ -78,7 +78,7 @@ export default function CartSidebar() {
         <div className="p-6 border-t border-zinc-100 bg-zinc-50/50">
           <div className="flex items-center justify-between mb-6">
             <span className="text-xs uppercase tracking-widest font-medium text-zinc-500">Subtotal</span>
-            <span className="text-lg font-medium text-zinc-900">₹{cartTotal().toLocaleString()}</span>
+            <span className="text-lg font-medium text-zinc-900">₹{cartTotal.toLocaleString()}</span>
           </div>
           
           <button

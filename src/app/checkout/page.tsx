@@ -32,7 +32,7 @@ export default function CheckoutPage() {
   const [agreedToTerms, setAgreedToTerms] = useState(false);
 
   // Math
-  const subtotal = cartTotal();
+  const subtotal = cartTotal;
   const shipping = 0; // Free shipping for luxury items
   const finalTotal = subtotal + shipping - discount;
 

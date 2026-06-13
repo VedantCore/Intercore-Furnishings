@@ -18,11 +18,13 @@ export async function POST(request: Request) {
 
     console.log("2. Attempting Razorpay Order Creation for amount:", body.amount);
     
-    const order = await razorpay.orders.create({
-      amount: Math.round(body.amount * 100), 
+    const options = {
+      amount: body.amount, // Frontend already converted it!
       currency: "INR",
-      receipt: "rcpt_" + Math.random().toString(36).substring(7),
-    });
+      receipt: `receipt_${Math.random().toString(36).substring(2, 9)}`,
+    };
+
+    const order = await razorpay.orders.create(options);
 
     console.log("3. Order Created Successfully:", order.id);
     return NextResponse.json({ orderId: order.id }, { status: 200 });
